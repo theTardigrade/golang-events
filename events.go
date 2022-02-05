@@ -59,12 +59,12 @@ func runnableHandlerData(value bitmask.Value) (handlers handlerData) {
 
 	for i := 0; i < dataLen; i++ {
 		if datum := data[i]; datum != nil {
-			m := value.IsMatch(datum.value)
-
-			for _, v := range values {
-				if m && datum.value.IsMatch(v) {
-					handlers = append(handlers, datum)
-					break
+			if value.IsMatch(datum.value) {
+				for _, v := range values {
+					if datum.value.IsMatch(v) {
+						handlers = append(handlers, datum)
+						break
+					}
 				}
 			}
 		}
