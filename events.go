@@ -164,10 +164,7 @@ func runDatum(datum *handlerDatum) {
 	}
 }
 
-func Run(names ...string) {
-	value := bitmask.ValueFromNames(names)
-	handlers := runnableHandlerData(value)
-
+func runHandlers(handlers handlerData) {
 	for _, datum := range handlers {
 		var done bool
 
@@ -185,4 +182,18 @@ func Run(names ...string) {
 			runDatum(datum)
 		}
 	}
+}
+
+func Run(names ...string) {
+	value := bitmask.ValueFromNames(names)
+	handlers := runnableHandlerData(value)
+
+	runHandlers(handlers)
+}
+
+func RunAll() {
+	value := bitmask.ValueFromNames(bitmask.Names())
+	handlers := runnableHandlerData(value)
+
+	runHandlers(handlers)
 }
