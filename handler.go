@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	HandlerOrder uint
+	HandlerOrder int
 	HandlerFunc  func()
 )
 

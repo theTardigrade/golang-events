@@ -49,26 +49,30 @@ func AddUnordered(handler HandlerFunc, names ...string) {
 }
 
 func runnableHandlerData(value bitmask.Value) (handlers handlerData) {
-	values := bitmask.Values()
+	func() {
+		values := bitmask.Values()
 
-	defer dataMutex.RUnlock()
-	dataMutex.RLock()
+		defer dataMutex.RUnlock()
+		dataMutex.RLock()
 
-	dataLen := len(data)
-	handlers = make(handlerData, 0, dataLen)
+		dataLen := len(data)
+		handlers = make(handlerData, 0, dataLen)
 
-	for i := 0; i < dataLen; i++ {
-		if datum := data[i]; datum != nil {
-			if value.IsMatch(datum.value) {
-				for _, v := range values {
-					if datum.value.IsMatch(v) {
-						handlers = append(handlers, datum)
-						break
+		for i := 0; i < dataLen; i++ {
+			if datum := data[i]; datum != nil {
+				if value.IsMatch(datum.value) {
+					for _, v := range values {
+						if datum.value.IsMatch(v) {
+							handlers = append(handlers, datum)
+							break
+						}
 					}
 				}
 			}
 		}
-	}
+	}()
+
+	sort.Sort(handlers)
 
 	return
 }
@@ -122,9 +126,21 @@ func Run(names ...string) {
 	value := bitmask.ValueFromNames(names)
 	handlers := runnableHandlerData(value)
 
-	sort.Sort(handlers)
-
 	for _, datum := range handlers {
-		go runDatum(datum)
+		var done bool
+
+		func(datum *handlerDatum) {
+			defer datum.mutex.Unlock()
+			datum.mutex.Lock()
+
+			if datum.isRunning {
+				datum.isRunPending = true
+				done = true
+			}
+		}(datum)
+
+		if !done {
+			go runDatum(datum)
+		}
 	}
 }
