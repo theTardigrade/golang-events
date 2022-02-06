@@ -12,12 +12,13 @@ type (
 )
 
 type handlerDatum struct {
-	value        bitmask.Value
-	order        HandlerOrder
-	handler      HandlerFunc
-	isRunning    bool
-	isRunPending bool
-	mutex        sync.Mutex
+	value              bitmask.Value
+	order              HandlerOrder
+	handler            HandlerFunc
+	shouldWaitTillDone bool
+	isRunning          bool
+	isRunPending       bool
+	mutex              sync.Mutex
 }
 
 type handlerData []*handlerDatum

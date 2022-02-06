@@ -13,18 +13,45 @@ var (
 	dataMutex sync.RWMutex
 )
 
-func Add(handler HandlerFunc, order HandlerOrder, names ...string) {
-	value := bitmask.ValueFromNames(names)
+type AddOptions struct {
+	Name               string
+	Names              []string
+	Handler            HandlerFunc
+	Order              HandlerOrder
+	ShouldWaitTillDone bool
+}
+
+func addValue(options *AddOptions) (value bitmask.Value) {
+	if len(options.Names) > 0 {
+		if options.Name == "" {
+			value = bitmask.ValueFromNames(options.Names)
+		} else {
+			var names []string
+
+			names = append(names, options.Names...)
+			names = append(names, options.Name)
+
+			value = bitmask.ValueFromNames(names)
+		}
+	} else {
+		value = bitmask.ValueFromName(options.Name)
+	}
+
+	return
+}
+
+func Add(options AddOptions) {
+	value := addValue(&options)
 
 	defer dataMutex.Unlock()
 	dataMutex.Lock()
 
 	// just update event bitmask value if handler function is already found
 	{
-		p1 := reflect.ValueOf(handler).Pointer()
+		p1 := reflect.ValueOf(options.Handler).Pointer()
 
 		for _, datum := range data {
-			if datum.order == order {
+			if datum.order == options.Order {
 				p2 := reflect.ValueOf(datum.handler).Pointer()
 
 				if p1 == p2 {
@@ -36,69 +63,51 @@ func Add(handler HandlerFunc, order HandlerOrder, names ...string) {
 	}
 
 	datum := handlerDatum{
-		value:   value,
-		order:   order,
-		handler: handler,
+		value:              value,
+		order:              options.Order,
+		handler:            options.Handler,
+		shouldWaitTillDone: options.ShouldWaitTillDone,
 	}
 
 	data = append(data, &datum)
 }
 
-func AddUnordered(handler HandlerFunc, names ...string) {
-	Add(handler, 0, names...)
-}
+func runnableUnorderedHandlerData(value bitmask.Value) (handlers handlerData) {
+	values := bitmask.Values()
 
-func runnableHandlerData(value bitmask.Value) (handlers handlerData) {
-	func() {
-		values := bitmask.Values()
+	defer dataMutex.RUnlock()
+	dataMutex.RLock()
 
-		defer dataMutex.RUnlock()
-		dataMutex.RLock()
+	dataLen := len(data)
+	handlers = make(handlerData, 0, dataLen)
 
-		dataLen := len(data)
-		handlers = make(handlerData, 0, dataLen)
-
-		for i := 0; i < dataLen; i++ {
-			if datum := data[i]; datum != nil {
-				if value.IsMatch(datum.value) {
-					for _, v := range values {
-						if datum.value.IsMatch(v) {
-							handlers = append(handlers, datum)
-							break
-						}
+	for i := 0; i < dataLen; i++ {
+		if datum := data[i]; datum != nil {
+			if value.IsMatch(datum.value) {
+				for _, v := range values {
+					if datum.value.IsMatch(v) {
+						handlers = append(handlers, datum)
+						break
 					}
 				}
 			}
 		}
-	}()
+	}
+
+	return
+}
+
+func runnableHandlerData(value bitmask.Value) (handlers handlerData) {
+	handlers = runnableUnorderedHandlerData(value)
 
 	sort.Sort(handlers)
 
 	return
 }
 
-func runDatum(datum *handlerDatum) {
-	var handler HandlerFunc
-
-	func() {
-		defer datum.mutex.Unlock()
-		datum.mutex.Lock()
-
-		if !datum.isRunning {
-			datum.isRunning = true
-			handler = datum.handler
-		} else {
-			datum.isRunPending = true
-		}
-	}()
-
-	if handler == nil {
-		return
-	}
-
-	handler()
-
+func runDatumPending(datum *handlerDatum) {
 	for {
+		var handler HandlerFunc
 		var done bool
 
 		func() {
@@ -122,6 +131,39 @@ func runDatum(datum *handlerDatum) {
 	}
 }
 
+func runDatum(datum *handlerDatum) {
+	var handler HandlerFunc
+	var shouldWaitTillDone bool
+
+	func() {
+		defer datum.mutex.Unlock()
+		datum.mutex.Lock()
+
+		if !datum.isRunning {
+			datum.isRunning = true
+			handler = datum.handler
+		} else {
+			datum.isRunPending = true
+		}
+
+		shouldWaitTillDone = datum.shouldWaitTillDone
+	}()
+
+	if handler == nil {
+		return
+	}
+
+	if shouldWaitTillDone {
+		handler()
+		go runDatumPending(datum)
+	} else {
+		go func() {
+			handler()
+			runDatumPending(datum)
+		}()
+	}
+}
+
 func Run(names ...string) {
 	value := bitmask.ValueFromNames(names)
 	handlers := runnableHandlerData(value)
@@ -140,7 +182,7 @@ func Run(names ...string) {
 		}(datum)
 
 		if !done {
-			go runDatum(datum)
+			runDatum(datum)
 		}
 	}
 }
