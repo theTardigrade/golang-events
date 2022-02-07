@@ -19,7 +19,7 @@ func addValueFromNames(nameOne string, nameMany []string) (value bitmask.Value) 
 		if nameOne == "" {
 			value = bitmask.ValueFromNames(nameMany)
 		} else {
-			var names []string
+			names := make([]string, 0, len(nameMany)+1)
 
 			names = append(names, nameMany...)
 			names = append(names, nameOne)
