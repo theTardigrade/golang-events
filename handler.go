@@ -3,7 +3,7 @@ package events
 import (
 	"sync"
 
-	"github.com/theTardigrade/golang-events/internal/bitmask"
+	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
 type (

@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/theTardigrade/golang-events/internal/bitmask"
+	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
 var (
@@ -21,7 +21,7 @@ type AddOptions struct {
 	ShouldWaitTillDone bool
 }
 
-func addValue(options *AddOptions) (value bitmask.Value) {
+func addValueFromNames(options AddOptions) (value bitmask.Value) {
 	if len(options.Names) > 0 {
 		if options.Name == "" {
 			value = bitmask.ValueFromNames(options.Names)
@@ -41,7 +41,7 @@ func addValue(options *AddOptions) (value bitmask.Value) {
 }
 
 func Add(options AddOptions) {
-	value := addValue(&options)
+	value := addValueFromNames(options)
 
 	defer dataMutex.Unlock()
 	dataMutex.Lock()
@@ -55,7 +55,7 @@ func Add(options AddOptions) {
 				p2 := reflect.ValueOf(datum.handler).Pointer()
 
 				if p1 == p2 {
-					datum.value.Or(value)
+					datum.value.Combine(value)
 					return
 				}
 			}
@@ -83,9 +83,9 @@ func runnableUnorderedHandlerData(value bitmask.Value) (handlers handlerData) {
 
 	for i := 0; i < dataLen; i++ {
 		if datum := data[i]; datum != nil {
-			if value.IsMatch(datum.value) {
+			if value.Contains(datum.value) {
 				for _, v := range values {
-					if datum.value.IsMatch(v) {
+					if datum.value.Contains(v) {
 						handlers = append(handlers, datum)
 						break
 					}
