@@ -31,14 +31,6 @@ func runnableUnorderedHandlerData(value bitmask.Value) (handlers handlerData) {
 	return
 }
 
-func runnableHandlerData(value bitmask.Value) (handlers handlerData) {
-	handlers = runnableUnorderedHandlerData(value)
-
-	sort.Sort(handlers)
-
-	return
-}
-
 func runnableUnorderedAllHandlerData() (handlers handlerData) {
 	defer dataMutex.RUnlock()
 	dataMutex.RLock()
@@ -55,8 +47,12 @@ func runnableUnorderedAllHandlerData() (handlers handlerData) {
 	return
 }
 
-func runnableAllHandlerData() (handlers handlerData) {
-	handlers = runnableUnorderedAllHandlerData()
+func runnableHandlerData(value *bitmask.Value) (handlers handlerData) {
+	if value != nil {
+		handlers = runnableUnorderedHandlerData(*value)
+	} else {
+		handlers = runnableUnorderedAllHandlerData()
+	}
 
 	sort.Sort(handlers)
 
@@ -144,13 +140,13 @@ func runHandlers(handlers handlerData) {
 
 func Run(names ...string) {
 	value := bitmask.ValueFromNames(names)
-	handlers := runnableHandlerData(value)
+	handlers := runnableHandlerData(&value)
 
 	runHandlers(handlers)
 }
 
 func RunAll() {
-	handlers := runnableAllHandlerData()
+	handlers := runnableHandlerData(nil)
 
 	runHandlers(handlers)
 }
