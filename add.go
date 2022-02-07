@@ -14,27 +14,27 @@ type AddOptions struct {
 	ShouldWaitTillDone bool
 }
 
-func addValueFromNames(options AddOptions) (value bitmask.Value) {
-	if len(options.Names) > 0 {
-		if options.Name == "" {
-			value = bitmask.ValueFromNames(options.Names)
+func addValueFromNames(nameOne string, nameMany []string) (value bitmask.Value) {
+	if len(nameMany) > 0 {
+		if nameOne == "" {
+			value = bitmask.ValueFromNames(nameMany)
 		} else {
 			var names []string
 
-			names = append(names, options.Names...)
-			names = append(names, options.Name)
+			names = append(names, nameMany...)
+			names = append(names, nameOne)
 
 			value = bitmask.ValueFromNames(names)
 		}
 	} else {
-		value = bitmask.ValueFromName(options.Name)
+		value = bitmask.ValueFromName(nameOne)
 	}
 
 	return
 }
 
 func Add(options AddOptions) {
-	value := addValueFromNames(options)
+	value := addValueFromNames(options.Name, options.Names)
 
 	defer dataMutex.Unlock()
 	dataMutex.Lock()
