@@ -15,14 +15,17 @@ type AddOptions struct {
 }
 
 func addValueFromNames(nameOne string, nameMany []string) (value bitmask.Value) {
-	if len(nameMany) > 0 {
+	if nameManyLen := len(nameMany); nameManyLen > 0 {
 		if nameOne == "" {
 			value = bitmask.ValueFromNames(nameMany)
 		} else {
-			names := make([]string, 0, len(nameMany)+1)
+			names := make([]string, nameManyLen+1)
 
-			names = append(names, nameMany...)
-			names = append(names, nameOne)
+			for i, n := range nameMany {
+				names[i] = n
+			}
+
+			names[nameManyLen] = nameOne
 
 			value = bitmask.ValueFromNames(names)
 		}
