@@ -12,7 +12,7 @@ type (
 )
 
 type handlerDatum struct {
-	value              bitmask.Value
+	value              *bitmask.Value
 	order              HandlerOrder
 	handler            HandlerFunc
 	shouldWaitTillDone bool

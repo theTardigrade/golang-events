@@ -14,25 +14,25 @@ type AddOptions struct {
 	ShouldWaitTillDone bool
 }
 
-func addValueFromNames(nameOne string, nameMany []string) (value bitmask.Value) {
+func addValueFromNames(nameOne string, nameMany []string) (value *bitmask.Value) {
 	if nameManyLen := len(nameMany); nameManyLen > 0 {
-		var names []string
+		var nameAll []string
 
 		if nameOne == "" {
-			names = nameMany
+			nameAll = nameMany
 		} else {
-			names = make([]string, nameManyLen+1)
+			nameAll = make([]string, nameManyLen+1)
 
 			for i, n := range nameMany {
-				names[i] = n
+				nameAll[i] = n
 			}
 
-			names[nameManyLen] = nameOne
+			nameAll[nameManyLen] = nameOne
 		}
 
-		value = bitmask.ValueFromNames(names)
+		value = bitmaskGenerator.ValueFromNames(nameAll...)
 	} else {
-		value = bitmask.ValueFromName(nameOne)
+		value = bitmaskGenerator.ValueFromName(nameOne)
 	}
 
 	return

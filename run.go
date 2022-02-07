@@ -6,8 +6,8 @@ import (
 	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
-func runnableUnorderedHandlerData(value bitmask.Value) (handlers handlerData) {
-	values := bitmask.Values()
+func runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
+	values := bitmaskGenerator.Values()
 
 	defer dataMutex.RUnlock()
 	dataMutex.RLock()
@@ -49,7 +49,7 @@ func runnableUnorderedAllHandlerData() (handlers handlerData) {
 
 func runnableHandlerData(value *bitmask.Value) (handlers handlerData) {
 	if value != nil {
-		handlers = runnableUnorderedHandlerData(*value)
+		handlers = runnableUnorderedHandlerData(value)
 	} else {
 		handlers = runnableUnorderedAllHandlerData()
 	}
@@ -139,8 +139,8 @@ func runHandlers(handlers handlerData) {
 }
 
 func Run(names ...string) {
-	value := bitmask.ValueFromNames(names)
-	handlers := runnableHandlerData(&value)
+	value := bitmaskGenerator.ValueFromNames(names...)
+	handlers := runnableHandlerData(value)
 
 	runHandlers(handlers)
 }
