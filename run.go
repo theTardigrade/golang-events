@@ -77,18 +77,21 @@ func runDatumPending(datum *handlerDatum) {
 			}
 		}()
 
+		var donePendingCount int
+
 		func() {
 			defer datum.doneMutex.Unlock()
 			datum.doneMutex.Lock()
 
 			if datum.donePendingCount > 0 {
-				for i := datum.donePendingCount; i > 0; i-- {
-					datum.doneChan <- struct{}{}
-				}
-
+				donePendingCount = datum.donePendingCount
 				datum.donePendingCount = 0
 			}
 		}()
+
+		for i := 0; i < donePendingCount; i++ {
+			datum.doneChan <- struct{}{}
+		}
 
 		if end || handler == nil {
 			break
