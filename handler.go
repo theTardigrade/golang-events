@@ -18,7 +18,11 @@ type handlerDatum struct {
 	shouldWaitTillDone bool
 	isRunning          bool
 	isRunPending       bool
-	mutex              sync.Mutex
+	mainMutex          sync.Mutex
+
+	doneChan         chan struct{}
+	donePendingCount int
+	doneMutex        sync.Mutex
 }
 
 type handlerData []*handlerDatum

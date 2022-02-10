@@ -23,14 +23,19 @@ func Add(options AddOptions) {
 		p1 := reflect.ValueOf(options.Handler).Pointer()
 
 		for _, datum := range data {
-			if datum.order == options.Order && datum.shouldWaitTillDone == options.ShouldWaitTillDone {
-				p2 := reflect.ValueOf(datum.handler).Pointer()
+			func() {
+				defer datum.mainMutex.Unlock()
+				datum.mainMutex.Lock()
 
-				if p1 == p2 {
-					datum.bitmaskValue.Combine(bitmaskValue)
-					return
+				if datum.order == options.Order && datum.shouldWaitTillDone == options.ShouldWaitTillDone {
+					p2 := reflect.ValueOf(datum.handler).Pointer()
+
+					if p1 == p2 {
+						datum.bitmaskValue.Combine(bitmaskValue)
+						return
+					}
 				}
-			}
+			}()
 		}
 	}
 
@@ -39,6 +44,7 @@ func Add(options AddOptions) {
 		order:              options.Order,
 		handler:            options.Handler,
 		shouldWaitTillDone: options.ShouldWaitTillDone,
+		doneChan:           make(chan struct{}),
 	}
 
 	data = append(data, &datum)

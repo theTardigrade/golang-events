@@ -62,22 +62,35 @@ func runnableHandlerData(value *bitmask.Value) (handlers handlerData) {
 func runDatumPending(datum *handlerDatum) {
 	for {
 		var handler HandlerFunc
-		var done bool
+		var end bool
 
 		func() {
-			defer datum.mutex.Unlock()
-			datum.mutex.Lock()
+			defer datum.mainMutex.Unlock()
+			datum.mainMutex.Lock()
 
 			if datum.isRunPending {
 				datum.isRunPending = false
 				handler = datum.handler
 			} else {
 				datum.isRunning = false
-				done = true
+				end = true
 			}
 		}()
 
-		if done || handler == nil {
+		func() {
+			defer datum.doneMutex.Unlock()
+			datum.doneMutex.Lock()
+
+			if datum.donePendingCount > 0 {
+				for i := datum.donePendingCount; i > 0; i-- {
+					datum.doneChan <- struct{}{}
+				}
+
+				datum.donePendingCount = 0
+			}
+		}()
+
+		if end || handler == nil {
 			break
 		}
 
@@ -90,8 +103,8 @@ func runDatum(datum *handlerDatum) {
 	var shouldWaitTillDone bool
 
 	func() {
-		defer datum.mutex.Unlock()
-		datum.mutex.Lock()
+		defer datum.mainMutex.Unlock()
+		datum.mainMutex.Lock()
 
 		if !datum.isRunning {
 			datum.isRunning = true
@@ -104,6 +117,17 @@ func runDatum(datum *handlerDatum) {
 	}()
 
 	if handler == nil {
+		if shouldWaitTillDone {
+			func() {
+				defer datum.doneMutex.Unlock()
+				datum.doneMutex.Lock()
+
+				datum.donePendingCount++
+			}()
+
+			<-datum.doneChan
+		}
+
 		return
 	}
 
@@ -123,8 +147,8 @@ func runHandlers(handlers handlerData) {
 		var done bool
 
 		func(datum *handlerDatum) {
-			defer datum.mutex.Unlock()
-			datum.mutex.Lock()
+			defer datum.mainMutex.Unlock()
+			datum.mainMutex.Lock()
 
 			if datum.isRunning {
 				datum.isRunPending = true
