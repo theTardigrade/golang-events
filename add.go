@@ -2,8 +2,6 @@ package events
 
 import (
 	"reflect"
-
-	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
 type AddOptions struct {
@@ -14,32 +12,8 @@ type AddOptions struct {
 	ShouldWaitTillDone bool
 }
 
-func addValueFromNames(nameOne string, nameMany []string) (value *bitmask.Value) {
-	if nameManyLen := len(nameMany); nameManyLen > 0 {
-		var nameAll []string
-
-		if nameOne == "" {
-			nameAll = nameMany
-		} else {
-			nameAll = make([]string, nameManyLen+1)
-
-			for i, n := range nameMany {
-				nameAll[i] = n
-			}
-
-			nameAll[nameManyLen] = nameOne
-		}
-
-		value = bitmaskGenerator.ValueFromNames(nameAll...)
-	} else {
-		value = bitmaskGenerator.ValueFromName(nameOne)
-	}
-
-	return
-}
-
 func Add(options AddOptions) {
-	value := addValueFromNames(options.Name, options.Names)
+	bitmaskValue := bitmaskValueFromNames(options.Name, options.Names)
 
 	defer dataMutex.Unlock()
 	dataMutex.Lock()
@@ -53,7 +27,7 @@ func Add(options AddOptions) {
 				p2 := reflect.ValueOf(datum.handler).Pointer()
 
 				if p1 == p2 {
-					datum.value.Combine(value)
+					datum.bitmaskValue.Combine(bitmaskValue)
 					return
 				}
 			}
@@ -61,7 +35,7 @@ func Add(options AddOptions) {
 	}
 
 	datum := handlerDatum{
-		value:              value,
+		bitmaskValue:       bitmaskValue,
 		order:              options.Order,
 		handler:            options.Handler,
 		shouldWaitTillDone: options.ShouldWaitTillDone,

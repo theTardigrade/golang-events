@@ -17,9 +17,9 @@ func runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
 
 	for i := 0; i < dataLen; i++ {
 		if datum := data[i]; datum != nil {
-			if value.Contains(datum.value) {
+			if value.Contains(datum.bitmaskValue) {
 				for _, v := range values {
-					if datum.value.Contains(v) {
+					if datum.bitmaskValue.Contains(v) {
 						handlers = append(handlers, datum)
 						break
 					}
