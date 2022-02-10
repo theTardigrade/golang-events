@@ -21,15 +21,14 @@ func bitmaskValueFromNames(nameOne string, nameMany []string) (value *bitmask.Va
 		nameSet[nameOne] = struct{}{}
 	}
 
-	if len(nameSet) == 0 {
-		nameSet[""] = struct{}{}
-	}
-
-	if len(nameSet) == 1 {
+	switch len(nameSet) {
+	case 0:
+		value = bitmaskGenerator.ValueFromName("")
+	case 1:
 		for n := range nameSet {
 			value = bitmaskGenerator.ValueFromName(n)
 		}
-	} else {
+	default:
 		nameAll := make([]string, len(nameSet))
 
 		var i int
