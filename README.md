@@ -41,13 +41,10 @@ func main() {
 
 	fmt.Println("***")
 	events.Run("one")
-	time.Sleep(time.Millisecond)
 	fmt.Println("***")
 	events.Run("two")
-	time.Sleep(time.Millisecond)
 	fmt.Println("***")
 	events.Run("one", "two")
-	time.Sleep(time.Millisecond)
 	fmt.Println("***")
 	events.RunAll()
 	fmt.Println("***")
