@@ -12,15 +12,21 @@ type (
 )
 
 type handlerDatum struct {
-	bitmaskValue       *bitmask.Value
+	// constant
 	order              HandlerOrder
 	handler            HandlerFunc
 	shouldWaitTillDone bool
-	isRunning          bool
-	isRunPending       bool
-	mainMutex          sync.Mutex
 
-	doneChan         chan struct{}
+	// mutable
+	bitmaskValue *bitmask.Value
+	isRunning    bool
+	isRunPending bool
+	mainMutex    sync.Mutex
+
+	// constant
+	doneChan chan struct{}
+
+	// mutable
 	donePendingCount int
 	doneMutex        sync.Mutex
 }

@@ -23,19 +23,20 @@ func Add(options AddOptions) {
 		p1 := reflect.ValueOf(options.Handler).Pointer()
 
 		for _, datum := range data {
-			func() {
-				defer datum.mainMutex.Unlock()
-				datum.mainMutex.Lock()
+			if datum.order == options.Order && datum.shouldWaitTillDone == options.ShouldWaitTillDone {
+				p2 := reflect.ValueOf(datum.handler).Pointer()
 
-				if datum.order == options.Order && datum.shouldWaitTillDone == options.ShouldWaitTillDone {
-					p2 := reflect.ValueOf(datum.handler).Pointer()
+				if p1 == p2 {
+					func() {
+						defer datum.mainMutex.Unlock()
+						datum.mainMutex.Lock()
 
-					if p1 == p2 {
 						datum.bitmaskValue.Combine(bitmaskValue)
-						return
-					}
+					}()
+
+					return
 				}
-			}()
+			}
 		}
 	}
 
