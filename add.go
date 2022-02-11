@@ -13,6 +13,10 @@ type AddOptions struct {
 }
 
 func Add(options AddOptions) {
+	if options.Handler == nil {
+		panic(ErrHandlerNil)
+	}
+
 	bitmaskValue := bitmaskValueFromNames(options.Name, options.Names)
 
 	defer dataMutex.Unlock()

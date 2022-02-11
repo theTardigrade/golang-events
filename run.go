@@ -12,25 +12,22 @@ func runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
 	defer dataMutex.RUnlock()
 	dataMutex.RLock()
 
-	dataLen := len(data)
-	handlers = make(handlerData, 0, dataLen)
+	handlers = make(handlerData, 0, len(data))
 
-	for i := 0; i < dataLen; i++ {
-		if datum := data[i]; datum != nil {
-			func() {
-				defer datum.mainMutex.Unlock()
-				datum.mainMutex.Lock()
+	for _, datum := range data {
+		func() {
+			defer datum.mainMutex.Unlock()
+			datum.mainMutex.Lock()
 
-				if value.Contains(datum.bitmaskValue) {
-					for _, v := range values {
-						if datum.bitmaskValue.Contains(v) {
-							handlers = append(handlers, datum)
-							break
-						}
+			if value.Contains(datum.bitmaskValue) {
+				for _, v := range values {
+					if datum.bitmaskValue.Contains(v) {
+						handlers = append(handlers, datum)
+						break
 					}
 				}
-			}()
-		}
+			}
+		}()
 	}
 
 	return
@@ -40,13 +37,10 @@ func runnableUnorderedAllHandlerData() (handlers handlerData) {
 	defer dataMutex.RUnlock()
 	dataMutex.RLock()
 
-	dataLen := len(data)
-	handlers = make(handlerData, 0, dataLen)
+	handlers = make(handlerData, 0, len(data))
 
-	for i := 0; i < dataLen; i++ {
-		if datum := data[i]; datum != nil {
-			handlers = append(handlers, datum)
-		}
+	for _, datum := range data {
+		handlers = append(handlers, datum)
 	}
 
 	return
