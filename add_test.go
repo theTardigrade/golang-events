@@ -23,14 +23,19 @@ func TestAdd(t *testing.T) {
 		Handler: handler,
 	})
 
-	func() {
-		expectedLen++
+	expectedLen++
 
+	func() {
 		defer dataMutex.RUnlock()
 		dataMutex.RLock()
 
 		assert.Equal(t, expectedLen, len(data))
 		assert.Equal(t, "1", data[0].bitmaskValue.String())
+		assert.Equal(t, false, data[0].shouldWaitTillDone)
+		assert.Equal(t, HandlerOrder(0), data[0].order)
+		assert.Equal(t, false, data[0].isRunning)
+		assert.Equal(t, false, data[0].isRunPending)
+		assert.Equal(t, 0, data[0].donePendingCount)
 	}()
 
 	Add(AddOptions{
@@ -53,9 +58,9 @@ func TestAdd(t *testing.T) {
 		Handler: handler,
 	})
 
-	func() {
-		expectedLen++
+	expectedLen++
 
+	func() {
 		defer dataMutex.RUnlock()
 		dataMutex.RLock()
 
