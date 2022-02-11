@@ -7,6 +7,11 @@ import (
 )
 
 func TestAdd(t *testing.T) {
+	defer testMutex.Unlock()
+	testMutex.Lock()
+
+	bitmaskGenerator.Clear()
+
 	func() {
 		defer dataMutex.RUnlock()
 		dataMutex.RLock()

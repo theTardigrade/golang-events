@@ -7,6 +7,11 @@ import (
 )
 
 func TestBitmaskValueFromNames(t *testing.T) {
+	defer testMutex.Unlock()
+	testMutex.Lock()
+
+	bitmaskGenerator.Clear()
+
 	value := bitmaskValueFromNames("test", nil)
 
 	assert.Equal(t, "1", value.String())
@@ -22,4 +27,8 @@ func TestBitmaskValueFromNames(t *testing.T) {
 	value = bitmaskValueFromNames("test2", []string{""})
 
 	assert.Equal(t, "10", value.String())
+
+	value = bitmaskValueFromNames("", []string{""})
+
+	assert.Equal(t, "100", value.String())
 }

@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/stretchr/testify v1.7.0
-	github.com/theTardigrade/golang-infiniteBitmask v1.2.57
+	github.com/theTardigrade/golang-infiniteBitmask v1.2.60
 )
 
 require (
