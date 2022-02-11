@@ -7,21 +7,56 @@ import (
 )
 
 func TestAdd(t *testing.T) {
+	var expectedLen int
+
 	func() {
 		defer dataMutex.RUnlock()
 		dataMutex.RLock()
 
-		assert.Equal(t, 0, len(data))
+		assert.Equal(t, expectedLen, len(data))
+	}()
+
+	handler := func() {}
+
+	Add(AddOptions{
+		Name:    "test",
+		Handler: handler,
+	})
+
+	func() {
+		expectedLen++
+
+		defer dataMutex.RUnlock()
+		dataMutex.RLock()
+
+		assert.Equal(t, expectedLen, len(data))
 	}()
 
 	Add(AddOptions{
-		Name: "test",
+		Name:    "test",
+		Handler: handler,
 	})
 
 	func() {
 		defer dataMutex.RUnlock()
 		dataMutex.RLock()
 
-		assert.Equal(t, 1, len(data))
+		assert.Equal(t, expectedLen, len(data))
+	}()
+
+	handler = func() {}
+
+	Add(AddOptions{
+		Name:    "test",
+		Handler: handler,
+	})
+
+	func() {
+		expectedLen++
+
+		defer dataMutex.RUnlock()
+		dataMutex.RLock()
+
+		assert.Equal(t, expectedLen, len(data))
 	}()
 }
