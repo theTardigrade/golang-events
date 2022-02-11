@@ -62,4 +62,18 @@ func TestAdd(t *testing.T) {
 		assert.Equal(t, "11", data[0].bitmaskValue.String())
 		assert.Equal(t, "1", data[1].bitmaskValue.String())
 	}()
+
+	Add(AddOptions{
+		Name:    "test3",
+		Handler: handler,
+	})
+
+	func() {
+		defer dataMutex.RUnlock()
+		dataMutex.RLock()
+
+		assert.Equal(t, 2, len(data))
+		assert.Equal(t, "11", data[0].bitmaskValue.String())
+		assert.Equal(t, "101", data[1].bitmaskValue.String())
+	}()
 }
