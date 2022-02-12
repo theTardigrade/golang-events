@@ -164,6 +164,7 @@ func (m *Manager) runHandlers(handlers handlerData) {
 	}
 }
 
+// Run calls event handlers associated with the named event.
 func (m *Manager) Run(names ...string) {
 	initManagerMethod(&m)
 
@@ -173,10 +174,13 @@ func (m *Manager) Run(names ...string) {
 	m.runHandlers(handlers)
 }
 
+// Run calls the Run method on the default manager.
 func Run(names ...string) {
 	defaultManager.Run(names...)
 }
 
+// Run calls all of the event handlers that have been added
+// to the manager.
 func (m *Manager) RunAll() {
 	initManagerMethod(&m)
 
@@ -185,6 +189,7 @@ func (m *Manager) RunAll() {
 	m.runHandlers(handlers)
 }
 
+// RunAll calls the RunAll method on the default manager.
 func RunAll() {
 	defaultManager.RunAll()
 }

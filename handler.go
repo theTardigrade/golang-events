@@ -6,10 +6,15 @@ import (
 	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
-type (
-	HandlerOrder int
-	HandlerFunc  func()
-)
+// HandlerOrder is used in the AddOptions struct
+// to determine whether a handler will be called
+// before or after another: lower values get
+// called first.
+type HandlerOrder int
+
+// HandlerFunc is used as the type of the function
+// that will be called when a relevant event is run.
+type HandlerFunc func()
 
 type handlerDatum struct {
 	// constant

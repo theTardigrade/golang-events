@@ -6,6 +6,10 @@ import (
 	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
+// Manager contains data and methods to handle all
+// event management.
+// You can, however, call the public package-level
+// functions, if you only want to use a default manager.
 type Manager struct {
 	inner       managerInner
 	innerInited bool
@@ -21,6 +25,8 @@ var (
 	defaultManager = NewManager()
 )
 
+// NewManager returns a pointer to an initialized
+// Manager struct.
 func NewManager() (m *Manager) {
 	m = &Manager{}
 

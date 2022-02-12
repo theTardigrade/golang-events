@@ -2,12 +2,20 @@ package events
 
 import "reflect"
 
+// RemoveOptions is used by the Remove method on a Manager
+// and the package-level Remove function.
+// The Name and Names fields are used together to uniquely
+// identify an event.
+// The Handler field contains the function that will be
+// removed.
 type RemoveOptions struct {
 	Name    string
 	Names   []string
 	Handler HandlerFunc
 }
 
+// Remove stops a handler function from being called
+// when a named event is run.
 func (m *Manager) Remove(options RemoveOptions) {
 	if options.Handler == nil {
 		return
@@ -46,5 +54,9 @@ func (m *Manager) Remove(options RemoveOptions) {
 			}
 		}
 	}
+}
 
+// Remove calls the Remove method on the default manager.
+func Remove(options RemoveOptions) {
+	defaultManager.Remove(options)
 }

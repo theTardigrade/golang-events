@@ -4,6 +4,18 @@ import (
 	"reflect"
 )
 
+// AddOptions is used by the Add method on a Manager
+// and the package-level Add function.
+// The Name and Names fields are used together to uniquely
+// identify an event.
+// The Handler field contains the function that will be
+// added.
+// The Order field is used to determine whether a handler
+// will be called before or after another: lower values
+// get called first.
+// The ShouldWaitTillDone field determines whether the Run
+// method (or package-level Run function) will wait for
+// the handler to finish its work before returning.
 type AddOptions struct {
 	Name               string
 	Names              []string
@@ -12,6 +24,8 @@ type AddOptions struct {
 	ShouldWaitTillDone bool
 }
 
+// Add sets up a handler function that will be called
+// when a named event is run.
 func (m *Manager) Add(options AddOptions) {
 	if options.Handler == nil {
 		return
@@ -57,6 +71,7 @@ func (m *Manager) Add(options AddOptions) {
 	m.inner.data = append(m.inner.data, &datum)
 }
 
+// Add calls the Add method on the default manager.
 func Add(options AddOptions) {
 	defaultManager.Add(options)
 }
