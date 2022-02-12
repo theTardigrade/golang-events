@@ -13,14 +13,14 @@ type AddOptions struct {
 }
 
 func (m *Manager) Add(options AddOptions) {
+	if options.Handler == nil {
+		return
+	}
+
 	if m == nil {
 		m = defaultManager
 	} else if m != defaultManager {
 		m.checkInner()
-	}
-
-	if options.Handler == nil {
-		panic(ErrHandlerNil)
 	}
 
 	bitmaskValue := m.bitmaskValueFromNames(options.Name, options.Names)
