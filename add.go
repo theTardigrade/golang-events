@@ -15,6 +15,8 @@ type AddOptions struct {
 func (m *Manager) Add(options AddOptions) {
 	if m == nil {
 		m = defaultManager
+	} else if m != defaultManager {
+		m.checkInner()
 	}
 
 	if options.Handler == nil {
@@ -30,7 +32,7 @@ func (m *Manager) Add(options AddOptions) {
 	{
 		p1 := reflect.ValueOf(options.Handler).Pointer()
 
-		for _, datum := range m.data {
+		for _, datum := range m.inner.data {
 			if datum.order == options.Order && datum.shouldWaitTillDone == options.ShouldWaitTillDone {
 				p2 := reflect.ValueOf(datum.handler).Pointer()
 
@@ -56,7 +58,7 @@ func (m *Manager) Add(options AddOptions) {
 		doneChan:           make(chan struct{}),
 	}
 
-	m.data = append(m.data, &datum)
+	m.inner.data = append(m.inner.data, &datum)
 }
 
 func Add(options AddOptions) {

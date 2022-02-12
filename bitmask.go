@@ -19,10 +19,10 @@ func (m *Manager) bitmaskValueFromNames(nameOne string, nameMany []string) (valu
 
 	switch len(nameSet) {
 	case 0:
-		value = m.bitmaskGenerator.ValueFromName("")
+		value = m.inner.bitmaskGenerator.ValueFromName("")
 	case 1:
 		for n := range nameSet {
-			value = m.bitmaskGenerator.ValueFromName(n)
+			value = m.inner.bitmaskGenerator.ValueFromName(n)
 		}
 	default:
 		nameAll := make([]string, len(nameSet))
@@ -33,7 +33,7 @@ func (m *Manager) bitmaskValueFromNames(nameOne string, nameMany []string) (valu
 			i++
 		}
 
-		value = m.bitmaskGenerator.ValueFromNames(nameAll...)
+		value = m.inner.bitmaskGenerator.ValueFromNames(nameAll...)
 	}
 
 	return

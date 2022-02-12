@@ -7,14 +7,14 @@ import (
 )
 
 func (m *Manager) runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
-	values := m.bitmaskGenerator.Values()
+	values := m.inner.bitmaskGenerator.Values()
 
 	defer m.dataMutex.RUnlock()
 	m.dataMutex.RLock()
 
-	handlers = make(handlerData, 0, len(m.data))
+	handlers = make(handlerData, 0, len(m.inner.data))
 
-	for _, datum := range m.data {
+	for _, datum := range m.inner.data {
 		func() {
 			defer datum.mainMutex.Unlock()
 			datum.mainMutex.Lock()
@@ -37,9 +37,9 @@ func (m *Manager) runnableUnorderedAllHandlerData() (handlers handlerData) {
 	defer m.dataMutex.RUnlock()
 	m.dataMutex.RLock()
 
-	handlers = make(handlerData, 0, len(m.data))
+	handlers = make(handlerData, 0, len(m.inner.data))
 
-	for _, datum := range m.data {
+	for _, datum := range m.inner.data {
 		handlers = append(handlers, datum)
 	}
 
@@ -167,9 +167,11 @@ func (m *Manager) runHandlers(handlers handlerData) {
 func (m *Manager) Run(names ...string) {
 	if m == nil {
 		m = defaultManager
+	} else if m != defaultManager {
+		m.checkInner()
 	}
 
-	value := m.bitmaskGenerator.ValueFromNames(names...)
+	value := m.inner.bitmaskGenerator.ValueFromNames(names...)
 	handlers := m.runnableHandlerData(value)
 
 	m.runHandlers(handlers)
@@ -182,6 +184,8 @@ func Run(names ...string) {
 func (m *Manager) RunAll() {
 	if m == nil {
 		m = defaultManager
+	} else if m != defaultManager {
+		m.checkInner()
 	}
 
 	handlers := m.runnableHandlerData(nil)
