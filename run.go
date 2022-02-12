@@ -165,7 +165,7 @@ func (m *Manager) runHandlers(handlers handlerData) {
 }
 
 func (m *Manager) Run(names ...string) {
-	m.initMethod(&m)
+	initManagerMethod(&m)
 
 	value := m.inner.bitmaskGenerator.ValueFromNames(names...)
 	handlers := m.runnableHandlerData(value)
@@ -178,7 +178,7 @@ func Run(names ...string) {
 }
 
 func (m *Manager) RunAll() {
-	m.initMethod(&m)
+	initManagerMethod(&m)
 
 	handlers := m.runnableHandlerData(nil)
 

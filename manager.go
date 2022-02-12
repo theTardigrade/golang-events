@@ -58,10 +58,10 @@ func (m *Manager) checkInner() {
 	}
 }
 
-func (m *Manager) initMethod(m2 **Manager) {
-	if m == nil {
-		*m2 = defaultManager
-	} else if m != defaultManager {
-		m.checkInner()
+func initManagerMethod(m **Manager) {
+	if mValue := *m; mValue == nil {
+		*m = defaultManager
+	} else if mValue != defaultManager {
+		mValue.checkInner()
 	}
 }

@@ -17,7 +17,7 @@ func (m *Manager) Add(options AddOptions) {
 		return
 	}
 
-	m.initMethod(&m)
+	initManagerMethod(&m)
 
 	bitmaskValue := m.bitmaskValueFromNames(options.Name, options.Names)
 
