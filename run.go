@@ -6,15 +6,15 @@ import (
 	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
-func runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
-	values := bitmaskGenerator.Values()
+func (m *Manager) runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
+	values := m.bitmaskGenerator.Values()
 
-	defer dataMutex.RUnlock()
-	dataMutex.RLock()
+	defer m.dataMutex.RUnlock()
+	m.dataMutex.RLock()
 
-	handlers = make(handlerData, 0, len(data))
+	handlers = make(handlerData, 0, len(m.data))
 
-	for _, datum := range data {
+	for _, datum := range m.data {
 		func() {
 			defer datum.mainMutex.Unlock()
 			datum.mainMutex.Lock()
@@ -33,24 +33,24 @@ func runnableUnorderedHandlerData(value *bitmask.Value) (handlers handlerData) {
 	return
 }
 
-func runnableUnorderedAllHandlerData() (handlers handlerData) {
-	defer dataMutex.RUnlock()
-	dataMutex.RLock()
+func (m *Manager) runnableUnorderedAllHandlerData() (handlers handlerData) {
+	defer m.dataMutex.RUnlock()
+	m.dataMutex.RLock()
 
-	handlers = make(handlerData, 0, len(data))
+	handlers = make(handlerData, 0, len(m.data))
 
-	for _, datum := range data {
+	for _, datum := range m.data {
 		handlers = append(handlers, datum)
 	}
 
 	return
 }
 
-func runnableHandlerData(value *bitmask.Value) (handlers handlerData) {
+func (m *Manager) runnableHandlerData(value *bitmask.Value) (handlers handlerData) {
 	if value != nil {
-		handlers = runnableUnorderedHandlerData(value)
+		handlers = m.runnableUnorderedHandlerData(value)
 	} else {
-		handlers = runnableUnorderedAllHandlerData()
+		handlers = m.runnableUnorderedAllHandlerData()
 	}
 
 	sort.Sort(handlers)
@@ -58,7 +58,7 @@ func runnableHandlerData(value *bitmask.Value) (handlers handlerData) {
 	return
 }
 
-func runDatumPending(datum *handlerDatum) {
+func (m *Manager) runDatumPending(datum *handlerDatum) {
 	for {
 		var handler HandlerFunc
 		var end bool
@@ -100,7 +100,7 @@ func runDatumPending(datum *handlerDatum) {
 	}
 }
 
-func runDatum(datum *handlerDatum) {
+func (m *Manager) runDatum(datum *handlerDatum) {
 	var handler HandlerFunc
 	var shouldWaitTillDone bool
 
@@ -135,16 +135,16 @@ func runDatum(datum *handlerDatum) {
 
 	if shouldWaitTillDone {
 		handler()
-		go runDatumPending(datum)
+		go m.runDatumPending(datum)
 	} else {
 		go func() {
 			handler()
-			runDatumPending(datum)
+			m.runDatumPending(datum)
 		}()
 	}
 }
 
-func runHandlers(handlers handlerData) {
+func (m *Manager) runHandlers(handlers handlerData) {
 	for _, datum := range handlers {
 		var done bool
 
@@ -159,20 +159,36 @@ func runHandlers(handlers handlerData) {
 		}(datum)
 
 		if !done {
-			runDatum(datum)
+			m.runDatum(datum)
 		}
 	}
 }
 
-func Run(names ...string) {
-	value := bitmaskGenerator.ValueFromNames(names...)
-	handlers := runnableHandlerData(value)
+func (m *Manager) Run(names ...string) {
+	if m == nil {
+		m = defaultManager
+	}
 
-	runHandlers(handlers)
+	value := m.bitmaskGenerator.ValueFromNames(names...)
+	handlers := m.runnableHandlerData(value)
+
+	m.runHandlers(handlers)
+}
+
+func Run(names ...string) {
+	defaultManager.Run(names...)
+}
+
+func (m *Manager) RunAll() {
+	if m == nil {
+		m = defaultManager
+	}
+
+	handlers := m.runnableHandlerData(nil)
+
+	m.runHandlers(handlers)
 }
 
 func RunAll() {
-	handlers := runnableHandlerData(nil)
-
-	runHandlers(handlers)
+	defaultManager.RunAll()
 }

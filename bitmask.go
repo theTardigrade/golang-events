@@ -4,11 +4,7 @@ import (
 	bitmask "github.com/theTardigrade/golang-infiniteBitmask"
 )
 
-var (
-	bitmaskGenerator = bitmask.NewGenerator()
-)
-
-func bitmaskValueFromNames(nameOne string, nameMany []string) (value *bitmask.Value) {
+func (m *Manager) bitmaskValueFromNames(nameOne string, nameMany []string) (value *bitmask.Value) {
 	nameSet := make(map[string]struct{})
 
 	for _, n := range nameMany {
@@ -23,10 +19,10 @@ func bitmaskValueFromNames(nameOne string, nameMany []string) (value *bitmask.Va
 
 	switch len(nameSet) {
 	case 0:
-		value = bitmaskGenerator.ValueFromName("")
+		value = m.bitmaskGenerator.ValueFromName("")
 	case 1:
 		for n := range nameSet {
-			value = bitmaskGenerator.ValueFromName(n)
+			value = m.bitmaskGenerator.ValueFromName(n)
 		}
 	default:
 		nameAll := make([]string, len(nameSet))
@@ -37,7 +33,7 @@ func bitmaskValueFromNames(nameOne string, nameMany []string) (value *bitmask.Va
 			i++
 		}
 
-		value = bitmaskGenerator.ValueFromNames(nameAll...)
+		value = m.bitmaskGenerator.ValueFromNames(nameAll...)
 	}
 
 	return

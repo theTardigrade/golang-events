@@ -12,21 +12,25 @@ type AddOptions struct {
 	ShouldWaitTillDone bool
 }
 
-func Add(options AddOptions) {
+func (m *Manager) Add(options AddOptions) {
+	if m == nil {
+		m = defaultManager
+	}
+
 	if options.Handler == nil {
 		panic(ErrHandlerNil)
 	}
 
-	bitmaskValue := bitmaskValueFromNames(options.Name, options.Names)
+	bitmaskValue := m.bitmaskValueFromNames(options.Name, options.Names)
 
-	defer dataMutex.Unlock()
-	dataMutex.Lock()
+	defer m.dataMutex.Unlock()
+	m.dataMutex.Lock()
 
 	// just update event bitmask value if handler function is already found
 	{
 		p1 := reflect.ValueOf(options.Handler).Pointer()
 
-		for _, datum := range data {
+		for _, datum := range m.data {
 			if datum.order == options.Order && datum.shouldWaitTillDone == options.ShouldWaitTillDone {
 				p2 := reflect.ValueOf(datum.handler).Pointer()
 
@@ -52,5 +56,9 @@ func Add(options AddOptions) {
 		doneChan:           make(chan struct{}),
 	}
 
-	data = append(data, &datum)
+	m.data = append(m.data, &datum)
+}
+
+func Add(options AddOptions) {
+	defaultManager.Add(options)
 }
