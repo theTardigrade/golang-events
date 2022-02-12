@@ -15,7 +15,9 @@ import (
 )
 
 func main() {
-	events.Add(events.AddOptions{
+	manager := events.NewManager()
+
+	manager.Add(events.AddOptions{
 		Handler: func() {
 			fmt.Println("THIS HANDLER IS CALLED WHEN EVENT ONE RUNS")
 		},
@@ -23,7 +25,7 @@ func main() {
 		ShouldWaitTillDone: true,
 	})
 
-	events.Add(events.AddOptions{
+	manager.Add(events.AddOptions{
 		Handler: func() {
 			fmt.Println("THIS HANDLER IS CALLED WHEN EVENT TWO RUNS")
 		},
@@ -31,7 +33,7 @@ func main() {
 		ShouldWaitTillDone: true,
 	})
 
-	events.Add(events.AddOptions{
+	manager.Add(events.AddOptions{
 		Handler: func() {
 			fmt.Println("THIS HANDLER IS CALLED WHEN EITHER EVENT ONE OR EVENT TWO RUNS")
 		},
@@ -40,13 +42,13 @@ func main() {
 	})
 
 	fmt.Println("***")
-	events.Run("one")
+	manager.Run("one")
 	fmt.Println("***")
-	events.Run("two")
+	manager.Run("two")
 	fmt.Println("***")
-	events.Run("one", "two")
+	manager.Run("one", "two")
 	fmt.Println("***")
-	events.RunAll()
+	manager.RunAll()
 	fmt.Println("***")
 }
 ```
