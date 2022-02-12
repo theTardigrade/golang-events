@@ -53,8 +53,4 @@ func TestAdd(t *testing.T) {
 	assert.Equal(t, 2, len(m.inner.data))
 	assert.Equal(t, "11", m.inner.data[0].bitmaskValue.String())
 	assert.Equal(t, "101", m.inner.data[1].bitmaskValue.String())
-
-	var m2 *Manager
-
-	m2.Add(AddOptions{Name: "test", Handler: func() {}})
 }

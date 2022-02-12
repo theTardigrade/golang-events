@@ -57,3 +57,11 @@ func (m *Manager) checkInner() {
 		m.initInner()
 	}
 }
+
+func (m *Manager) initMethod(m2 **Manager) {
+	if m == nil {
+		*m2 = defaultManager
+	} else if m != defaultManager {
+		m.checkInner()
+	}
+}

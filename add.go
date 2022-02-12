@@ -17,11 +17,7 @@ func (m *Manager) Add(options AddOptions) {
 		return
 	}
 
-	if m == nil {
-		m = defaultManager
-	} else if m != defaultManager {
-		m.checkInner()
-	}
+	m.initMethod(&m)
 
 	bitmaskValue := m.bitmaskValueFromNames(options.Name, options.Names)
 
