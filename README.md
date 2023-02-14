@@ -2,6 +2,8 @@
 
 This Go package allows you to set handler functions that run when named events occur.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/theTardigrade/golang-events.svg)](https://pkg.go.dev/github.com/theTardigrade/golang-events) [![Go Report Card](https://goreportcard.com/badge/github.com/theTardigrade/golang-events)](https://goreportcard.com/report/github.com/theTardigrade/golang-events)
+
 ## Example
 
 ```golang
@@ -55,4 +57,6 @@ func main() {
 
 ## Support
 
-If you use this package, or find any value in it, please consider donating at [Ko-fi](https://ko-fi.com/thetardigrade).
+If you use this package, or find any value in it, please consider donating:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S2EIRL0)
